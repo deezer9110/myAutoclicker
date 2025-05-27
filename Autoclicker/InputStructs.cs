@@ -6,37 +6,48 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Autoclicker {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT {
+        public int x;
+        public int y;
+
+        public POINT(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public POINT GetPOINT() {
+            return new POINT(x, y);
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential)] // SEQUENTIAL = fields are laid out in the order they are declared
     public struct MOUSEINPUT {
-        int dx; // x movement
-        int dy; // y movement
-        uint mouseData; // scroll wheel / buttons data
-        uint dwFlags; // specifies type of mouse action
-        uint time; // lets system timestamp the event, normally 0
-        IntPtr dwExtraInfo; // optional app defined ptr that's rarely used
 
-        public void setPosition(int x, int y) {
-            dx = x;
-            dy = y;
-        }
+        public int dx; // x movement
+        public int dy; // y movement
+        public uint mouseData; // scroll wheel / buttons data
+        public uint dwFlags; // specifies type of mouse action
+        public uint time; // lets system timestamp the event, normally 0
+        public UIntPtr dwExtraInfo; // optional app defined ptr that's rarely used
 
-        public void setMouseData(uint data) {
-            mouseData = data;
-        }
-
-        public void setFlags(uint flags) {
-            dwFlags = flags;
-        }
-
-        public void setTime(uint time) {
+        public MOUSEINPUT(POINT p, uint mouseData, uint dwFlags, uint time, UIntPtr dwExtraInfo) {
+            dx = p.x;
+            dy = p.y;
+            this.mouseData = mouseData;
+            this.dwFlags = dwFlags;
             this.time = time;
+            this.dwExtraInfo = dwExtraInfo;
         }
 
-        public void setExtraInfo(IntPtr extraInfo) {
-            dwExtraInfo = extraInfo;
+        public MOUSEINPUT(int dx, int dy, uint mouseData, uint dwFlags, uint time, UIntPtr dwExtraInfo) {
+            this.dx = dx;
+            this.dy = dy;
+            this.mouseData = mouseData;
+            this.dwFlags = dwFlags;
+            this.time = time;
+            this.dwExtraInfo = dwExtraInfo;
         }
-
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -52,6 +63,11 @@ namespace Autoclicker {
     public struct INPUT {
         public uint type; // 0 for mouse input, 1 for keyboard input
         public INPUT_UNION u; // 
+
+        public INPUT(uint type, INPUT_UNION u) {
+            this.type = type;
+            this.u = u;
+        }
     }
 
     [StructLayout(LayoutKind.Explicit)] // EXPLICIT = fields are laid out at specific offsets
