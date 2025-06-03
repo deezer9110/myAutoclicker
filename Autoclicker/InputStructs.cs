@@ -57,6 +57,14 @@ namespace Autoclicker {
         uint dwFlags; 
         uint time; 
         IntPtr dwExtraInfo; 
+
+        public KEYBDINPUT(ushort wVk, ushort wScan, uint dwFlags, uint time, IntPtr dwExtraInfo) {
+            this.wVk = wVk;
+            this.wScan = wScan;
+            this.dwFlags = dwFlags;
+            this.time = time;
+            this.dwExtraInfo = dwExtraInfo;
+        }   
     }
 
     [StructLayout(LayoutKind.Sequential)]

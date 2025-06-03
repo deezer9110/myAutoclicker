@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,27 +13,26 @@ namespace Autoclicker {
     internal class Autoclicker {
 
         private int clicksPerSec;
-        private System.Timers.Timer clickTimer;
-        private INPUT[] pInputs;
+        private System.Timers.Timer clickTimer = new();
+        private INPUT[] pInputs = new INPUT[2];
+        private CancellationTokenSource cts;
 
         public Autoclicker(int initialCPS) {
-            setCPS(initialCPS);
-            createTimer();
+            SetCPS(initialCPS);
+            cts = new CancellationTokenSource(); // Initialize the CancellationTokenSource
         }
 
-        public void createTimer() {
-            clickTimer = new System.Timers.Timer(1000.0 / clicksPerSec);
-        }
-
-        public void destroyTimer() {
-            clickTimer.Stop();
-            clickTimer.Dispose(); 
-        }
-        public void setCPS(int initialCPS) {
+        public void SetCPS(int initialCPS) {
             clicksPerSec = initialCPS > 0 ? initialCPS : 0; // One line code to ensure non-negative value, like an if statement
         }
-        public int getCPS() {
+        public int GetCPS() {
             return clicksPerSec;
+        }
+        
+        public void UpdateAutoclicker(int newCPS) {
+            if (newCPS > 0) {
+                SetCPS(newCPS);
+            }
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -58,41 +60,38 @@ namespace Autoclicker {
         private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
 
-        public void click(object? sender, ElapsedEventArgs e) {
-
+        public void Click() {
             createInputs();
-            if(SendInput(2, pInputs, Marshal.SizeOf<INPUT>()) != 2)
-                Console.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
-            else
-                Console.WriteLine("Click");
+            if (SendInput(2, pInputs, Marshal.SizeOf<INPUT>()) != 2) {
+                Debug.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
+                return;
+            } else {
+                Debug.WriteLine("Click sent successfully.");
+            }
         }
 
-        public void startClicking() {
-            clickTimer.Elapsed += click;
+        public void StartClicking() {
 
-            clickTimer.AutoReset = true;
-            clickTimer.Enabled = true;
+            var token = cts.Token;
 
-            Console.WriteLine("Clicking started at rate: " + clicksPerSec);
+            // Use a lambda to handle the logic
+            // Using async = asynchronous method to allow for delays without blocking other threads, like the UI in forms
+            // Task is just used to keep the method in the background and is a better alternative to a timer
+            Task.Run(async () => {
+                while (!token.IsCancellationRequested) {
+                    Click();
+                    await Task.Delay(1000 / clicksPerSec);
+                }
+            });
         }
 
-        public void stopClicking() {
-            clickTimer.Enabled = false;
+        public void StopClicking() {
+            cts?.Cancel(); // Using ?, it checks the nullability of cts instead of an if statement or exception or something else
+            cts = new(); // Reset for future use
         }
 
-        public bool increaseCPS(int val) {
-            if (clicksPerSec > 0 && val > 0)
-                clicksPerSec += val;
-            else
-                return false;
-            return true;
-        }
-        public bool decreaseCPS(int val) {
-            if (clicksPerSec > 0 && val > 0)
-                clicksPerSec -= val;
-            else
-                return false;
-            return true;
+        public void AntiAfk() {
+
         }
     }
 }
