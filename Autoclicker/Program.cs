@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Autoclicker
 {
     internal static class Program
@@ -6,8 +8,7 @@ namespace Autoclicker
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
-        {
+        static void Main() {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();

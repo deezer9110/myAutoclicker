@@ -13,13 +13,16 @@ namespace Autoclicker {
     internal class Autoclicker {
 
         private int clicksPerSec;
-        private System.Timers.Timer clickTimer = new();
         private INPUT[] pInputs = new INPUT[2];
-        private CancellationTokenSource cts;
+        private INPUT[] pInputs2 = new INPUT[1];
+        private CancellationTokenSource ctsClick;
+        private CancellationTokenSource ctsAAfk;
+        private Random rnd = new();
 
         public Autoclicker(int initialCPS) {
             SetCPS(initialCPS);
-            cts = new CancellationTokenSource(); // Initialize the CancellationTokenSource
+            ctsClick = new CancellationTokenSource(); // Initialize the CancellationTokenSource for clicking
+            ctsAAfk = new CancellationTokenSource(); // Initialize the CancellationTokenSource for Anti-AFK
         }
 
         public void SetCPS(int initialCPS) {
@@ -28,7 +31,7 @@ namespace Autoclicker {
         public int GetCPS() {
             return clicksPerSec;
         }
-        
+
         public void UpdateAutoclicker(int newCPS) {
             if (newCPS > 0) {
                 SetCPS(newCPS);
@@ -38,7 +41,7 @@ namespace Autoclicker {
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool GetCursorPos(out POINT lpPoint);
 
-        public void createInputs() {
+        public void CreateInputsClick() {
 
             GetCursorPos(out POINT p);
 
@@ -54,14 +57,30 @@ namespace Autoclicker {
 
             pInputs[0] = inp;
             pInputs[1] = inp2;
+
+        }
+
+        public void CreateInputsKeyBD(uint action, ushort keyCode) {
+
+            KEYBDINPUT ki;
+            INPUT_UNION u;
+            INPUT inp;
+
+            pInputs2 = new INPUT[1]; // Reset the array for Anti-AFK inputs
+
+
+            ki = new(keyCode, 0, action, 0, UIntPtr.Zero);
+            u = new INPUT_UNION { ki = ki };
+            inp = new(1, u);
+
+            pInputs2[0] = inp;
         }
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
-
-        public void Click() {
-            createInputs();
+        private void Click() {
+            CreateInputsClick();
             if (SendInput(2, pInputs, Marshal.SizeOf<INPUT>()) != 2) {
                 Debug.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
                 return;
@@ -70,9 +89,34 @@ namespace Autoclicker {
             }
         }
 
+        private void AAMove() {
+            uint[] actions = { 0x0, 0x0002 }; // KEYDOWN and KEYUP respectively
+            ushort[] keys = { 0x41, 0x44 }; // A and D keys
+
+            // Nested for loop to iterate through key down and key up of actions for A and D keys
+            for (int i = 0; i < 2; i++) {
+                for(int j = 0; j < 2; j++) {
+
+                    CreateInputsKeyBD(actions[j], keys[i]);
+
+                    if (SendInput(1, pInputs2, Marshal.SizeOf<INPUT>()) != 1) {
+                        Debug.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
+                        return;
+                    } else {
+                        Debug.WriteLine("Anti-AFK move sent successfully.");
+                    }
+
+                    if (actions[j] == 0)
+                        Thread.Sleep(3000);
+                    
+                }
+            }
+
+        }
+
         public void StartClicking() {
 
-            var token = cts.Token;
+            var token = ctsClick.Token;
 
             // Use a lambda to handle the logic
             // Using async = asynchronous method to allow for delays without blocking other threads, like the UI in forms
@@ -86,12 +130,29 @@ namespace Autoclicker {
         }
 
         public void StopClicking() {
-            cts?.Cancel(); // Using ?, it checks the nullability of cts instead of an if statement or exception or something else
-            cts = new(); // Reset for future use
+            ctsClick?.Cancel(); // Using ?, it checks the nullability of cts instead of an if statement or exception or something else
+            ctsClick = new(); // Reset for future use
         }
 
+        // Would work for things that are text based, but not for games that require an input with functions like
+        // GetASyncKeyState, which wouldn't intake a simulated key press as valid movement
         public void AntiAfk() {
 
+            var token = ctsAAfk.Token;
+
+            Task.Run(async () => {
+                while (!token.IsCancellationRequested) {
+                    int timeBetween = rnd.Next(10000, 30000);
+                    AAMove();
+                    await Task.Delay(timeBetween);
+                }
+            });
+
+        }
+
+        public void AntiAfkStop() {
+            ctsAAfk?.Cancel(); // Cancel the Anti-AFK task if it's running
+            ctsAAfk = new(); // Reset for future use
         }
     }
 }

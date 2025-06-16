@@ -56,9 +56,9 @@ namespace Autoclicker {
         ushort wScan; 
         uint dwFlags; 
         uint time; 
-        IntPtr dwExtraInfo; 
+        UIntPtr dwExtraInfo; 
 
-        public KEYBDINPUT(ushort wVk, ushort wScan, uint dwFlags, uint time, IntPtr dwExtraInfo) {
+        public KEYBDINPUT(ushort wVk, ushort wScan, uint dwFlags, uint time, UIntPtr dwExtraInfo) {
             this.wVk = wVk;
             this.wScan = wScan;
             this.dwFlags = dwFlags;
