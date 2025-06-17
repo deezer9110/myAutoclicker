@@ -46,7 +46,7 @@ namespace Autoclicker {
         }
 
         private void UpdateBtn_Click(object sender, EventArgs e) {
-            int cpsValue = int.TryParse(cpsTextBox.Text, out int result) ? result : 0; // Default to 10 if parsing fails
+            int cpsValue = int.TryParse(cpsTextBox.Text, out int result) ? result : 10; // Default to 10 if parsing fails
             clickingTime = int.TryParse(timeTextBox.Text, out result) ? result : 0; // Default to 0 if parsing fails
             autoclicker.UpdateAutoclicker(cpsValue);
         }
