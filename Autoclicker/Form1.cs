@@ -29,10 +29,11 @@ namespace Autoclicker {
             if (clickingTime > 0) {
                 Thread.Sleep(clickingTime * 1000); // Convert seconds to milliseconds
                 autoclicker.StopClicking();
-                startBtn.Enabled = true; // Re-enable the start button after the time has elapsed
+                ToggleStartBtn(); // Re-enable the start button after the time has elapsed
                 Debug.WriteLine("Clicking stopped");
             } else {
                 Debug.WriteLine("Clicking will continue until stopped manually.");
+                ToggleStartBtn();
             }
         }
 
