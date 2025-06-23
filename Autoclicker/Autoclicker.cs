@@ -33,6 +33,7 @@ namespace Autoclicker {
         }
 
         public void UpdateAutoclicker(int newCPS) {
+            StopClicking(); // Stop clicking before updating CPS
             if (newCPS > 0) {
                 SetCPS(newCPS);
             }
@@ -84,8 +85,6 @@ namespace Autoclicker {
             if (SendInput(2, pInputs, Marshal.SizeOf<INPUT>()) != 2) {
                 Debug.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
                 return;
-            } else {
-                Debug.WriteLine("Click sent successfully.");
             }
         }
 
@@ -97,15 +96,15 @@ namespace Autoclicker {
             for (int i = 0; i < 2; i++) {
                 for(int j = 0; j < 2; j++) {
 
+                    // Create KEYBD inputs for A and D keys
                     CreateInputsKeyBD(actions[j], keys[i]);
 
                     if (SendInput(1, pInputs2, Marshal.SizeOf<INPUT>()) != 1) {
                         Debug.WriteLine("Error sending input: " + Marshal.GetLastWin32Error());
                         return;
-                    } else {
-                        Debug.WriteLine("Anti-AFK move sent successfully.");
                     }
 
+                    // Delay to keep key pressed down for a short time
                     if (actions[j] == 0)
                         Thread.Sleep(3000);
                     
@@ -115,7 +114,7 @@ namespace Autoclicker {
         }
 
         public void StartClicking() {
-
+            
             var token = ctsClick.Token;
 
             // Use a lambda to handle the logic

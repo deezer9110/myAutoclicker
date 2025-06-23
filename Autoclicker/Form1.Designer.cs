@@ -79,7 +79,7 @@
             aAfkBtn.FlatAppearance.BorderColor = Color.Black;
             aAfkBtn.FlatStyle = FlatStyle.Flat;
             aAfkBtn.Font = new Font("Arial", 12F, FontStyle.Bold);
-            aAfkBtn.ForeColor = Color.White;
+            aAfkBtn.ForeColor = Color.Red;
             aAfkBtn.Location = new Point(403, 273);
             aAfkBtn.Name = "aAfkBtn";
             aAfkBtn.Size = new Size(394, 84);

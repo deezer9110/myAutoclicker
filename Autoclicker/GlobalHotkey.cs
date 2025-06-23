@@ -68,14 +68,13 @@ namespace Autoclicker {
                         autoclicker.StartClicking();
                         aCRunning = 1; // Set the flag to indicate that autoclicker is running
                         Debug.WriteLine("Global Hotkey Ctrl + Shift + A pressed - Autoclicker started");
+                        form.GetStartBtn().Enabled = false; // Disable the start button
                     } else {
                         autoclicker.StopClicking();
                         aCRunning = 0; // Reset the flag to indicate that autoclicker is stopped
                         Debug.WriteLine("Global Hotkey Ctrl + Shift + A pressed - Autoclicker stopped");
+                        form.GetStartBtn().Enabled = true; // Re-enable the start button
                     }
-                    Debug.WriteLine("Global Hotkey Ctrl + Shift + A pressed");
-
-                    form.ToggleStartBtn();
                 }
             }
             return CallNextHookEx(hookID, nCode, wParam, lParam);
